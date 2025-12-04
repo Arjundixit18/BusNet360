@@ -1,0 +1,21 @@
+stop_id,stop_name,latitude,longitude
+1,Central Station,30.7333,76.7794
+2,Bus Stand,30.7409,76.7794
+3,Railway Station,30.729,76.7821
+4,City Center,30.7352,76.7689
+5,Mall Road,30.742,76.785
+6,University,30.75,76.77
+7,Hospital,30.738,76.775
+8,Airport,30.67,76.78
+9,Tech Park,30.76,76.79
+10,Stadium,30.725,76.76
+11,Market,30.735,76.772
+12,Park,30.745,76.768
+13,Library,30.728,76.78
+14,Museum,30.74,76.776
+15,Temple,30.732,76.764
+16,Old Town,30.715,76.755
+17,Factory Area,30.755,76.795
+18,Beach,30.69,76.75
+19,Hill Station,30.77,76.8
+20,Resort Area,30.66,76.74
