@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker — Complete Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5efe0;
+    --tan: #d4b896;
+    --brown: #8b6f47;
+    --dark-brown: #4a3728;
+    --warm-white: #faf6ee;
+    --shadow-brown: rgba(74, 55, 40, 0.15);
+    --ink: #2c1f14;
+    --accent: #c17f3a;
+    --light-tan: #e8d5b7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #c9b99a;
+    background-image:
+      repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(139,111,71,0.03) 2px, rgba(139,111,71,0.03) 4px),
+      repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(139,111,71,0.03) 2px, rgba(139,111,71,0.03) 4px);
+    font-family: 'Lora', Georgia, serif;
+    color: var(--ink);
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  .page-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  /* Paper card base */
+  .paper {
+    background: var(--cream);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    border-radius: 2px;
+    box-shadow:
+      4px 6px 20px var(--shadow-brown),
+      0 2px 8px rgba(74,55,40,0.1),
+      inset 0 0 60px rgba(212,184,150,0.2);
+    position: relative;
+    padding: 48px 52px;
+    overflow: visible;
+  }
+
+  .paper::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 0; right: 0;
+    height: 18px;
+    background: var(--cream);
+    clip-path: polygon(0% 0%, 3% 100%, 7% 20%, 11% 90%, 15% 10%, 18% 80%, 22% 5%, 26% 95%, 30% 15%, 34% 85%, 38% 0%, 42% 100%, 46% 20%, 50% 90%, 54% 10%, 58% 80%, 62% 5%, 66% 95%, 70% 15%, 74% 85%, 78% 0%, 82% 100%, 86% 20%, 90% 90%, 94% 10%, 97% 80%, 100% 0%);
+    filter: drop-shadow(0 -2px 3px rgba(74,55,40,0.12));
+  }
+
+  .paper::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 18px;
+    background: var(--cream);
+    clip-path: polygon(0% 100%, 3% 0%, 6% 90%, 10% 10%, 14% 80%, 18% 100%, 22% 5%, 26% 85%, 30% 100%, 35% 20%, 39% 90%, 43% 0%, 47% 100%, 51% 15%, 55% 85%, 59% 0%, 63% 100%, 67% 20%, 71% 80%, 75% 0%, 80% 100%, 84% 10%, 88% 90%, 92% 5%, 96% 85%, 100% 100%);
+    filter: drop-shadow(0 2px 3px rgba(74,55,40,0.12));
+  }
+
+  .paper-tape {
+    position: absolute;
+    background: rgba(212,184,150,0.55);
+    border: 1px solid rgba(139,111,71,0.2);
+  }
+
+  .tape-top {
+    top: -8px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 22px;
+    border-radius: 1px;
+  }
+
+  .tape-corner-tl {
+    top: -6px; left: 20px;
+    width: 60px; height: 18px;
+    transform: rotate(-3deg);
+    border-radius: 1px;
+  }
+
+  .tape-corner-tr {
+    top: -6px; right: 30px;
+    width: 55px; height: 18px;
+    transform: rotate(2deg);
+    border-radius: 1px;
+  }
+
+  /* Cover */
+  .cover {
+    background: #e8d5b7;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(139,111,71,0.06) 0px, rgba(139,111,71,0.06) 1px, transparent 1px, transparent 28px);
+    text-align: center;
+    padding: 72px 52px 80px;
+  }
+
+  .cover-tag {
+    display: inline-block;
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brown);
+    border: 1px solid var(--tan);
+    padding: 5px 14px;
+    margin-bottom: 28px;
+    background: rgba(255,255,255,0.35);
+  }
+
+  .cover h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 68px;
+    font-weight: 900;
+    color: var(--dark-brown);
+    line-height: 0.95;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+  }
+
+  .cover h1 span {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .cover-sub {
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--brown);
+    text-transform: uppercase;
+    margin-top: 20px;
+    margin-bottom: 40px;
+  }
+
+  .cover-tagline {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--brown);
+    border-top: 1px solid var(--tan);
+    border-bottom: 1px solid var(--tan);
+    padding: 12px 0;
+    margin: 0 auto 40px;
+    max-width: 500px;
+  }
+
+  .cover-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  .pill {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark-brown);
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(139,111,71,0.3);
+    padding: 5px 12px;
+    border-radius: 0;
+  }
+
+  .cover-illustration {
+    margin: 36px auto 0;
+    width: 280px;
+    height: 160px;
+    position: relative;
+  }
+
+  /* Section header */
+  .section-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 100px;
+    font-weight: 900;
+    color: rgba(139,111,71,0.12);
+    position: absolute;
+    top: 20px; right: 36px;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .section-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--dark-brown);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .section-divider {
+    width: 60px;
+    height: 2px;
+    background: var(--accent);
+    margin: 16px 0 28px;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark-brown);
+    margin: 28px 0 12px;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #3a2c1e;
+    margin-bottom: 14px;
+  }
+
+  /* Sticky notes */
+  .sticky {
+    background: #f0e4c4;
+    background-image: repeating-linear-gradient(0deg, rgba(139,111,71,0.08) 0px, rgba(139,111,71,0.08) 1px, transparent 1px, transparent 22px);
+    padding: 20px 24px;
+    box-shadow: 3px 4px 12px rgba(74,55,40,0.18), inset 0 0 30px rgba(212,184,150,0.3);
+    position: relative;
+    margin: 24px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .sticky.rotate-left { transform: rotate(-0.8deg); }
+  .sticky.rotate-right { transform: rotate(0.6deg); }
+
+  .sticky-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0 28px;
+    font-size: 13.5px;
+  }
+
+  thead tr {
+    background: var(--dark-brown);
+    color: var(--cream);
+  }
+
+  thead th {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  tbody tr:nth-child(even) {
+    background: rgba(212,184,150,0.25);
+  }
+
+  tbody tr:nth-child(odd) {
+    background: rgba(255,255,255,0.4);
+  }
+
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(139,111,71,0.15);
+    line-height: 1.5;
+    vertical-align: top;
+  }
+
+  tbody td:first-child {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--dark-brown);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--dark-brown);
+    color: #f0e4c4;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    padding: 24px 28px;
+    margin: 20px 0;
+    position: relative;
+    box-shadow: 4px 4px 16px rgba(74,55,40,0.25);
+    border-left: 3px solid var(--accent);
+  }
+
+  .code-label {
+    position: absolute;
+    top: -10px; left: 20px;
+    background: var(--accent);
+    color: var(--cream);
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+  }
+
+  .code-block .comment { color: #a0896b; }
+  .code-block .keyword { color: #e8c87a; }
+  .code-block .string { color: #b8d4a0; }
+  .code-block .cmd { color: #f0e4c4; }
+
+  /* Diagrams */
+  .diagram-wrapper {
+    background: rgba(255,255,255,0.35);
+    border: 1px solid rgba(139,111,71,0.25);
+    padding: 32px 24px;
+    margin: 24px 0;
+    position: relative;
+    box-shadow: inset 0 0 40px rgba(212,184,150,0.2);
+  }
+
+  .diagram-caption {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brown);
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  /* Architecture diagram */
+  .arch-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+
+  .arch-box {
+    background: var(--cream);
+    border: 1.5px solid var(--tan);
+    padding: 14px 18px;
+    min-width: 120px;
+    text-align: center;
+    box-shadow: 2px 3px 8px var(--shadow-brown);
+    position: relative;
+  }
+
+  .arch-box-title {
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .arch-box-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark-brown);
+  }
+
+  .arch-box-sub {
+    font-size: 10px;
+    color: var(--brown);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .arch-arrow {
+    font-size: 22px;
+    color: var(--tan);
+    padding: 0 8px;
+    font-family: serif;
+  }
+
+  /* Layer diagram */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  .layer {
+    padding: 10px 20px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid;
+  }
+
+  .layer-rw {
+    background: rgba(193,127,58,0.2);
+    border-color: var(--accent);
+    color: var(--dark-brown);
+    font-weight: 700;
+  }
+
+  .layer-ro {
+    background: rgba(255,255,255,0.5);
+    border-color: var(--tan);
+    color: var(--dark-brown);
+  }
+
+  .layer-badge {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 0;
+  }
+
+  .badge-rw { background: var(--accent); color: white; }
+  .badge-ro { background: var(--tan); color: var(--dark-brown); }
+
+  /* Comparison grid */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .compare-card {
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(139,111,71,0.25);
+    padding: 20px;
+    box-shadow: 2px 3px 10px var(--shadow-brown);
+  }
+
+  .compare-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark-brown);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--tan);
+  }
+
+  .compare-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .compare-card li {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #3a2c1e;
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .compare-card li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  /* Network diagram */
+  .network-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .net-card {
+    background: rgba(255,255,255,0.45);
+    border: 1px solid rgba(139,111,71,0.3);
+    padding: 16px;
+    box-shadow: 2px 2px 8px var(--shadow-brown);
+  }
+
+  .net-card-title {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .net-card p {
+    font-size: 12.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Storage types */
+  .storage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .storage-card {
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(139,111,71,0.2);
+    padding: 18px 14px;
+    text-align: center;
+    box-shadow: 2px 3px 8px var(--shadow-brown);
+  }
+
+  .storage-card-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .storage-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark-brown);
+    margin-bottom: 8px;
+  }
+
+  .storage-card p {
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Security cards */
+  .security-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .sec-card {
+    background: rgba(255,255,255,0.4);
+    border-top: 3px solid var(--accent);
+    padding: 16px;
+    box-shadow: 2px 3px 8px var(--shadow-brown);
+  }
+
+  .sec-card-title {
+    font-family: 'Lora', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark-brown);
+    margin-bottom: 8px;
+  }
+
+  .sec-card p {
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Pull quote */
+  .pull-quote {
+    border-left: 3px solid var(--accent);
+    padding: 12px 24px;
+    margin: 24px 0;
+    background: rgba(212,184,150,0.2);
+  }
+
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--dark-brown);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Cheat sheet grid */
+  .cheat-section {
+    margin-bottom: 28px;
+  }
+
+  .cheat-section h3 {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--tan);
+  }
+
+  /* Step flow */
+  .step-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 20px 0;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: rgba(255,255,255,0.35);
+    padding: 12px 16px;
+    border-left: 3px solid transparent;
+  }
+
+  .step-item:nth-child(odd) { border-left-color: var(--accent); }
+  .step-item:nth-child(even) { border-left-color: var(--tan); }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: rgba(139,111,71,0.35);
+    line-height: 1;
+    min-width: 28px;
+  }
+
+  .step-text {
+    font-size: 13.5px;
+    line-height: 1.6;
+    padding-top: 4px;
+  }
+
+  /* Key terms grid on cover */
+  .terms-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .term-card {
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(139,111,71,0.25);
+    padding: 14px;
+    text-align: left;
+    box-shadow: 1px 2px 6px var(--shadow-brown);
+  }
+
+  .term-name {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .term-desc {
+    font-size: 12px;
+    line-height: 1.55;
+    color: #3a2c1e;
+  }
+
+  /* Swarm diagram */
+  .swarm-diagram {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin: 20px 0;
+  }
+
+  .swarm-manager {
+    background: rgba(193,127,58,0.15);
+    border: 1.5px solid var(--accent);
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .swarm-workers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .swarm-worker {
+    background: rgba(255,255,255,0.45);
+    border: 1px solid var(--tan);
+    padding: 10px 14px;
+    font-size: 12.5px;
+  }
+
+  .swarm-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brown);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .swarm-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark-brown);
+  }
+
+  .swarm-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--tan);
+    font-size: 24px;
+    padding: 0 4px;
+  }
+
+  /* TOC */
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 20px;
+  }
+
+  .toc-item {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.35);
+    border-bottom: 1px solid rgba(139,111,71,0.15);
+  }
+
+  .toc-num {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 24px;
+    font-weight: 700;
+  }
+
+  .toc-title {
+    font-family: 'Lora', serif;
+    font-size: 13px;
+    color: var(--dark-brown);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 680px) {
+    .paper { padding: 36px 24px; }
+    .compare-grid, .storage-grid, .security-grid, .network-grid, .terms-grid { grid-template-columns: 1fr; }
+    h2 { font-size: 28px; }
+    .cover h1 { font-size: 42px; }
+    .toc-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- COVER -->
+  <div class="paper cover">
+    <div class="paper-tape tape-corner-tl"></div>
+    <div class="paper-tape tape-corner-tr"></div>
+    <span class="cover-tag">Complete Study Notes</span>
+    <h1>DOCK<span>ER</span></h1>
+    <p class="cover-sub">Containers · Images · Volumes · Networking · Compose · Swarm</p>
+    <p class="cover-tagline">"Build, Ship, and Run Any App, Anywhere"</p>
+
+    <!-- Simple SVG Illustration -->
+    <svg width="320" height="140" viewBox="0 0 320 140" style="margin:0 auto;display:block">
+      <rect x="10" y="60" width="80" height="50" rx="2" fill="#e8d5b7" stroke="#8b6f47" stroke-width="1.2"/>
+      <text x="50" y="90" text-anchor="middle" font-family="Courier Prime,monospace" font-size="11" fill="#4a3728">APP 1</text>
+      <rect x="10" y="25" width="80" height="28" rx="2" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1"/>
+      <text x="50" y="44" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#8b6f47">CONTAINER</text>
+      <rect x="110" y="55" width="80" height="55" rx="2" fill="#e8d5b7" stroke="#8b6f47" stroke-width="1.2"/>
+      <text x="150" y="87" text-anchor="middle" font-family="Courier Prime,monospace" font-size="11" fill="#4a3728">APP 2</text>
+      <rect x="110" y="20" width="80" height="28" rx="2" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1"/>
+      <text x="150" y="39" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#8b6f47">CONTAINER</text>
+      <rect x="210" y="50" width="80" height="60" rx="2" fill="#e8d5b7" stroke="#8b6f47" stroke-width="1.2"/>
+      <text x="250" y="84" text-anchor="middle" font-family="Courier Prime,monospace" font-size="11" fill="#4a3728">APP 3</text>
+      <rect x="210" y="15" width="80" height="28" rx="2" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1"/>
+      <text x="250" y="34" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#8b6f47">CONTAINER</text>
+      <rect x="0" y="112" width="320" height="24" rx="2" fill="#4a3728"/>
+      <text x="160" y="128" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#f0e4c4" letter-spacing="2">DOCKER ENGINE — HOST OS KERNEL</text>
+    </svg>
+
+    <div class="terms-grid">
+      <div class="term-card"><span class="term-name">Image</span><p class="term-desc">Read-only blueprint for creating containers. Built from a Dockerfile.</p></div>
+      <div class="term-card"><span class="term-name">Container</span><p class="term-desc">A running instance of an image. Isolated, ephemeral, lightweight process.</p></div>
+      <div class="term-card"><span class="term-name">Dockerfile</span><p class="term-desc">Plain text script that tells Docker how to build an image.</p></div>
+      <div class="term-card"><span class="term-name">Registry</span><p class="term-desc">Storage and distribution system for images. Docker Hub is the default.</p></div>
+      <div class="term-card"><span class="term-name">Volume</span><p class="term-desc">Persistent storage that survives container restarts and deletion.</p></div>
+      <div class="term-card"><span class="term-name">Network</span><p class="term-desc">Virtual network connecting containers to each other and the outside world.</p></div>
+    </div>
+
+    <div class="cover-pills">
+      <span class="pill">20+ Pages</span>
+      <span class="pill">All Key Concepts</span>
+      <span class="pill">Code Examples</span>
+      <span class="pill">Diagrams</span>
+      <span class="pill">From Zero to Docker Hero</span>
+    </div>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="paper">
+    <div class="paper-tape tape-top"></div>
+    <span class="section-num">00</span>
+    <span class="section-label">Navigation</span>
+    <h2>Table of Contents</h2>
+    <div class="section-divider"></div>
+    <div class="toc-grid">
+      <div class="toc-item"><span class="toc-num">01</span><span class="toc-title">What is Docker — The Big Picture</span></div>
+      <div class="toc-item"><span class="toc-num">02</span><span class="toc-title">Docker Architecture Deep Dive</span></div>
+      <div class="toc-item"><span class="toc-num">03</span><span class="toc-title">Containers vs Virtual Machines</span></div>
+      <div class="toc-item"><span class="toc-num">04</span><span class="toc-title">Docker Images and the Layer System</span></div>
+      <div class="toc-item"><span class="toc-num">05</span><span class="toc-title">Writing a Dockerfile — Full Reference</span></div>
+      <div class="toc-item"><span class="toc-num">06</span><span class="toc-title">Building and Running Containers</span></div>
+      <div class="toc-item"><span class="toc-num">07</span><span class="toc-title">Docker Volumes — Data Persistence</span></div>
+      <div class="toc-item"><span class="toc-num">08</span><span class="toc-title">Docker Networking</span></div>
+      <div class="toc-item"><span class="toc-num">09</span><span class="toc-title">Docker Compose — Multi-container Apps</span></div>
+      <div class="toc-item"><span class="toc-num">10</span><span class="toc-title">Docker Swarm — Container Orchestration</span></div>
+      <div class="toc-item"><span class="toc-num">11</span><span class="toc-title">Debugging and Monitoring Containers</span></div>
+      <div class="toc-item"><span class="toc-num">12</span><span class="toc-title">Security Best Practices</span></div>
+      <div class="toc-item"><span class="toc-num">13</span><span class="toc-title">Quick Command Cheat Sheet</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 01: WHAT IS DOCKER -->
+  <div class="paper">
+    <span class="section-num">01</span>
+    <span class="section-label">Foundation</span>
+    <h2>What is Docker?</h2>
+    <div class="section-divider"></div>
+
+    <p>Docker is an open-source containerization platform that allows developers to package applications and their dependencies into lightweight, portable units called containers. Once packaged, a container runs identically on any machine that has Docker installed — whether it is a developer's laptop, a staging server, or a production cloud instance.</p>
+
+    <div class="pull-quote">
+      <p>"Works on my machine" becomes works everywhere. Docker wraps your app, runtime, libraries, and config into one self-contained unit.</p>
+    </div>
+
+    <p>Before Docker, deploying software meant dealing with dependency hell — the same code behaved differently across environments because of mismatched OS versions, library conflicts, and configuration drift. Docker solves this by isolating each application in its own environment.</p>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Why Developers Love It</h4>
+        <ul>
+          <li>No more "works on my machine" problems</li>
+          <li>Same image runs in dev, staging, and production</li>
+          <li>Faster startup than full Virtual Machines</li>
+          <li>Efficient resource usage — shares OS kernel</li>
+          <li>Version control for your entire runtime</li>
+          <li>One-command deploys with Docker Hub</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>Honest Tradeoffs</h4>
+        <ul>
+          <li>Adds complexity to simple single-app setups</li>
+          <li>Requires Linux kernel (VMs needed on Mac/Windows)</li>
+          <li>Stateful apps need careful volume management</li>
+          <li>Learning curve for networking and security</li>
+          <li>Container sprawl if not managed well</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 02: ARCHITECTURE -->
+  <div class="paper">
+    <span class="section-num">02</span>
+    <span class="section-label">Architecture</span>
+    <h2>Docker Architecture</h2>
+    <div class="section-divider"></div>
+
+    <p>Docker uses a client-server architecture. The Docker Client (your terminal) communicates with the Docker Daemon over a REST API. The Daemon does all the heavy lifting — building images, running containers, managing networks and volumes.</p>
+
+    <div class="diagram-wrapper">
+      <svg width="100%" height="220" viewBox="0 0 680 220">
+        <!-- Client -->
+        <rect x="20" y="40" width="130" height="140" rx="2" fill="#f0e4c4" stroke="#8b6f47" stroke-width="1.5"/>
+        <text x="85" y="62" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#c17f3a" letter-spacing="2">CLIENT</text>
+        <rect x="36" y="74" width="98" height="24" rx="1" fill="#4a3728"/>
+        <text x="85" y="90" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#f0e4c4">docker run</text>
+        <rect x="36" y="104" width="98" height="24" rx="1" fill="#4a3728"/>
+        <text x="85" y="120" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#f0e4c4">docker build</text>
+        <rect x="36" y="134" width="98" height="24" rx="1" fill="#4a3728"/>
+        <text x="85" y="150" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#f0e4c4">docker pull</text>
+
+        <!-- Arrow 1 -->
+        <line x1="152" y1="110" x2="188" y2="110" stroke="#c17f3a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="170" y="104" text-anchor="middle" font-family="Special Elite,monospace" font-size="7.5" fill="#8b6f47">REST API</text>
+        <defs>
+          <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 z" fill="#c17f3a"/>
+          </marker>
+        </defs>
+
+        <!-- Daemon -->
+        <rect x="190" y="20" width="200" height="180" rx="2" fill="#e8d5b7" stroke="#8b6f47" stroke-width="1.5"/>
+        <text x="290" y="44" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#c17f3a" letter-spacing="2">DOCKER HOST</text>
+        <rect x="210" y="54" width="160" height="34" rx="1" fill="#4a3728"/>
+        <text x="290" y="73" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#f0e4c4" letter-spacing="1">DOCKER DAEMON</text>
+        <rect x="210" y="98" width="72" height="84" rx="1" fill="rgba(255,255,255,0.5)" stroke="#c17f3a" stroke-width="1"/>
+        <text x="246" y="115" text-anchor="middle" font-family="Special Elite,monospace" font-size="7.5" fill="#c17f3a">IMAGES</text>
+        <text x="246" y="132" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#4a3728">node:18</text>
+        <text x="246" y="148" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#4a3728">nginx</text>
+        <text x="246" y="164" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#4a3728">ubuntu</text>
+        <rect x="290" y="98" width="80" height="84" rx="1" fill="rgba(255,255,255,0.5)" stroke="#8b6f47" stroke-width="1"/>
+        <text x="330" y="115" text-anchor="middle" font-family="Special Elite,monospace" font-size="7.5" fill="#8b6f47">CONTAINERS</text>
+        <rect x="298" y="122" width="64" height="16" rx="1" fill="#c17f3a" opacity="0.7"/>
+        <text x="330" y="133" text-anchor="middle" font-family="Courier Prime,monospace" font-size="8.5" fill="white">web_app</text>
+        <rect x="298" y="142" width="64" height="16" rx="1" fill="#8b6f47" opacity="0.7"/>
+        <text x="330" y="153" text-anchor="middle" font-family="Courier Prime,monospace" font-size="8.5" fill="white">db_pg</text>
+        <rect x="298" y="162" width="64" height="16" rx="1" fill="#4a3728" opacity="0.7"/>
+        <text x="330" y="173" text-anchor="middle" font-family="Courier Prime,monospace" font-size="8.5" fill="white">redis</text>
+
+        <!-- Arrow 2 -->
+        <line x1="392" y1="110" x2="428" y2="110" stroke="#c17f3a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="428" y1="90" x2="392" y2="90" stroke="#8b6f47" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <text x="410" y="105" text-anchor="middle" font-family="Special Elite,monospace" font-size="7.5" fill="#8b6f47">push/pull</text>
+
+        <!-- Registry -->
+        <rect x="430" y="30" width="230" height="160" rx="2" fill="#f5efe0" stroke="#8b6f47" stroke-width="1.5"/>
+        <text x="545" y="52" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#c17f3a" letter-spacing="2">REGISTRY (Docker Hub)</text>
+        <rect x="450" y="62" width="190" height="22" rx="1" fill="rgba(74,55,40,0.08)" stroke="#d4b896" stroke-width="1"/>
+        <text x="545" y="77" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">image:latest (v4)</text>
+        <rect x="450" y="90" width="190" height="22" rx="1" fill="rgba(74,55,40,0.06)" stroke="#d4b896" stroke-width="1"/>
+        <text x="545" y="105" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">image:1.2 (v3)</text>
+        <rect x="450" y="118" width="190" height="22" rx="1" fill="rgba(74,55,40,0.04)" stroke="#d4b896" stroke-width="1"/>
+        <text x="545" y="133" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">image:1.1 (v2)</text>
+        <rect x="450" y="146" width="190" height="22" rx="1" fill="rgba(74,55,40,0.02)" stroke="#d4b896" stroke-width="1"/>
+        <text x="545" y="161" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">image:1.0 (v1)</text>
+      </svg>
+      <p class="diagram-caption">Figure 1 — Docker Architecture: Client, Host, and Registry</p>
+    </div>
+
+    <div class="step-flow">
+      <div class="step-item"><span class="step-num">1</span><span class="step-text">Docker CLI receives the command and sends it to the Docker Daemon via REST API.</span></div>
+      <div class="step-item"><span class="step-num">2</span><span class="step-text">Daemon checks if the requested image exists locally.</span></div>
+      <div class="step-item"><span class="step-num">3</span><span class="step-text">If not found, the Daemon pulls the image from Docker Hub layer by layer.</span></div>
+      <div class="step-item"><span class="step-num">4</span><span class="step-text">Daemon creates a new container from the image.</span></div>
+      <div class="step-item"><span class="step-num">5</span><span class="step-text">Daemon starts the container — the process runs, then exits.</span></div>
+      <div class="step-item"><span class="step-num">6</span><span class="step-text">Output is streamed back to your terminal.</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 03: CONTAINERS VS VMS -->
+  <div class="paper">
+    <span class="section-num">03</span>
+    <span class="section-label">Core Concept</span>
+    <h2>Containers vs Virtual Machines</h2>
+    <div class="section-divider"></div>
+
+    <p>Both VMs and containers provide isolation, but they do it at very different levels. Understanding this difference is key to knowing when to use Docker and why it is so much faster.</p>
+
+    <div class="sticky rotate-left">
+      <span class="sticky-label">Mental Model</span>
+      A VM is like renting an entire house — own kitchen, bedroom, bathroom. A container is like renting a hotel room. You share the building's plumbing and electricity, but your room is completely private.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Virtual Machine</th>
+          <th>Docker Container</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>What it virtualizes</td><td>Hardware (CPU, Memory, Storage)</td><td>Operating System (kernel)</td></tr>
+        <tr><td>Startup time</td><td>30 seconds to several minutes</td><td>Milliseconds to a few seconds</td></tr>
+        <tr><td>Size on disk</td><td>5–20 GB per VM</td><td>10–200 MB per image</td></tr>
+        <tr><td>OS per instance</td><td>Full OS per VM</td><td>Shares host OS kernel</td></tr>
+        <tr><td>Isolation level</td><td>Very strong — hardware-level</td><td>Process-level (lighter)</td></tr>
+        <tr><td>Portability</td><td>Tied to hypervisor format</td><td>Runs anywhere Docker runs</td></tr>
+        <tr><td>Resource usage</td><td>High — dedicated RAM and CPU</td><td>Low — shares host resources</td></tr>
+        <tr><td>Boot mechanism</td><td>Full kernel and OS bootup</td><td>Just starts a process</td></tr>
+        <tr><td>Best use case</td><td>Full OS isolation, legacy apps</td><td>Microservices, rapid deployment</td></tr>
+      </tbody>
+    </table>
+
+    <div class="diagram-wrapper">
+      <svg width="100%" height="200" viewBox="0 0 600 200">
+        <!-- VM Stack -->
+        <text x="150" y="20" text-anchor="middle" font-family="Special Elite,monospace" font-size="10" fill="#8b6f47" letter-spacing="2">VIRTUAL MACHINE</text>
+        <rect x="60" y="30" width="180" height="30" rx="1" fill="#c17f3a" opacity="0.85"/>
+        <text x="150" y="50" text-anchor="middle" font-family="Courier Prime,monospace" font-size="11" fill="white">App A</text>
+        <rect x="60" y="65" width="180" height="22" rx="1" fill="#8b6f47" opacity="0.85"/>
+        <text x="150" y="80" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="white">Guest OS (Full)</text>
+        <rect x="60" y="92" width="180" height="22" rx="1" fill="#6b5235" opacity="0.85"/>
+        <text x="150" y="107" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="white">Hypervisor</text>
+        <rect x="60" y="119" width="180" height="22" rx="1" fill="#4a3728"/>
+        <text x="150" y="134" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#f0e4c4">Host OS</text>
+        <rect x="60" y="146" width="180" height="22" rx="1" fill="#2c1f14"/>
+        <text x="150" y="161" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#d4b896">Hardware</text>
+
+        <!-- Container Stack -->
+        <text x="440" y="20" text-anchor="middle" font-family="Special Elite,monospace" font-size="10" fill="#8b6f47" letter-spacing="2">DOCKER CONTAINER</text>
+        <rect x="340" y="30" width="90" height="30" rx="1" fill="#c17f3a" opacity="0.85"/>
+        <text x="385" y="50" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="white">App A</text>
+        <rect x="440" y="30" width="90" height="30" rx="1" fill="#c17f3a" opacity="0.6"/>
+        <text x="485" y="50" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="white">App B</text>
+        <rect x="340" y="65" width="190" height="22" rx="1" fill="#8b6f47" opacity="0.7"/>
+        <text x="435" y="80" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="white">Docker Engine</text>
+        <rect x="340" y="92" width="190" height="22" rx="1" fill="#4a3728"/>
+        <text x="435" y="107" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#f0e4c4">Host OS Kernel (shared)</text>
+        <rect x="340" y="119" width="190" height="22" rx="1" fill="#2c1f14"/>
+        <text x="435" y="134" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#d4b896">Hardware</text>
+        <text x="435" y="170" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="11" fill="#8b6f47">No guest OS — much lighter</text>
+      </svg>
+      <p class="diagram-caption">Figure 2 — VM stack vs. Container stack side by side</p>
+    </div>
+  </div>
+
+  <!-- SECTION 04: IMAGES & LAYERS -->
+  <div class="paper">
+    <span class="section-num">04</span>
+    <span class="section-label">Images</span>
+    <h2>Docker Images and the Layer System</h2>
+    <div class="section-divider"></div>
+
+    <p>A Docker image is a read-only, immutable template used to create containers. Think of it as a class in object-oriented programming — you can create many instances (containers) from one class (image). Images are built from Dockerfiles and stored in registries.</p>
+
+    <p>Every instruction in a Dockerfile creates a new read-only layer. Layers are cached and reused across builds — if a layer has not changed, Docker skips rebuilding it. This makes builds dramatically faster. When you run a container, Docker adds a thin writable layer on top.</p>
+
+    <div class="diagram-wrapper">
+      <div class="layer-stack">
+        <div class="layer layer-rw">
+          <span>Writable Container Layer</span>
+          <span class="layer-badge badge-rw">R/W</span>
+        </div>
+        <div class="layer layer-ro">
+          <span>APP Layer &nbsp;&nbsp;<code style="font-size:11px;color:#8b6f47">COPY . /app</code></span>
+          <span class="layer-badge badge-ro">R/O</span>
+        </div>
+        <div class="layer layer-ro">
+          <span>Deps Layer &nbsp;&nbsp;<code style="font-size:11px;color:#8b6f47">RUN npm install</code></span>
+          <span class="layer-badge badge-ro">R/O</span>
+        </div>
+        <div class="layer layer-ro">
+          <span>Runtime Layer &nbsp;&nbsp;<code style="font-size:11px;color:#8b6f47">FROM node:18</code></span>
+          <span class="layer-badge badge-ro">R/O</span>
+        </div>
+        <div class="layer layer-ro">
+          <span>OS Base Layer &nbsp;&nbsp;<code style="font-size:11px;color:#8b6f47">ubuntu:22.04</code></span>
+          <span class="layer-badge badge-ro">R/O</span>
+        </div>
+      </div>
+      <p class="diagram-caption">Figure 3 — Image Layer Stack: OS at bottom, writable container layer at top</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Layer Facts</h4>
+        <ul>
+          <li>Layers are identified by a SHA-256 content hash</li>
+          <li>Shared layers are stored only once on disk</li>
+          <li>Pulling an image only downloads missing layers</li>
+          <li>All image layers except the top are read-only</li>
+          <li><code style="font-size:11px">docker image history</code> shows all layers and sizes</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>Layer Best Practices</h4>
+        <ul>
+          <li>Never store secrets in Dockerfile or image layers</li>
+          <li>Minimize layers — combine RUN commands with <code style="font-size:11px">&&</code></li>
+          <li>Order instructions from least to most frequently changed</li>
+          <li>Use <code style="font-size:11px">.dockerignore</code> to exclude files from build context</li>
+          <li>Base images like alpine are tiny — only about 5 MB</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Essential Image Commands</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>docker images</td><td>List all locally available images</td></tr>
+        <tr><td>docker pull nginx:latest</td><td>Download an image from Docker Hub</td></tr>
+        <tr><td>docker push myuser/myapp:1.0</td><td>Upload image to a registry</td></tr>
+        <tr><td>docker rmi image_name</td><td>Remove a local image</td></tr>
+        <tr><td>docker image inspect nginx</td><td>Show full JSON metadata about an image</td></tr>
+        <tr><td>docker image history nginx</td><td>Show all layers and their sizes</td></tr>
+        <tr><td>docker image prune</td><td>Remove all unused or dangling images</td></tr>
+        <tr><td>docker tag myapp:1.0 myapp:latest</td><td>Create an alias tag for an image</td></tr>
+        <tr><td>docker save -o app.tar myapp:1.0</td><td>Export image to a .tar file</td></tr>
+        <tr><td>docker load -i app.tar</td><td>Import image from a .tar file</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 05: DOCKERFILE -->
+  <div class="paper">
+    <span class="section-num">05</span>
+    <span class="section-label">Dockerfile</span>
+    <h2>Writing a Dockerfile</h2>
+    <div class="section-divider"></div>
+
+    <p>A Dockerfile is a plain text file containing step-by-step instructions that Docker follows to build an image. Each instruction becomes a layer in the image. The file name must be exactly <code style="font-size:13px;font-family:'Courier Prime',monospace;color:var(--accent)">Dockerfile</code>.</p>
+
+    <h3>All Dockerfile Instructions</h3>
+    <table>
+      <thead><tr><th>Instruction</th><th>Purpose</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>FROM</td><td>Sets the base image — must be first instruction</td><td>FROM ubuntu:22.04</td></tr>
+        <tr><td>RUN</td><td>Executes commands during build, creates a new layer</td><td>RUN apt-get install -y curl</td></tr>
+        <tr><td>CMD</td><td>Default command when container starts (overridable)</td><td>CMD ["node", "app.js"]</td></tr>
+        <tr><td>ENTRYPOINT</td><td>Fixed command that always runs; CMD becomes its args</td><td>ENTRYPOINT ["/entrypoint.sh"]</td></tr>
+        <tr><td>COPY</td><td>Copies files from build context into image</td><td>COPY ./src /app/src</td></tr>
+        <tr><td>ADD</td><td>Like COPY but can extract .tar and fetch URLs</td><td>ADD app.tar.gz /app</td></tr>
+        <tr><td>WORKDIR</td><td>Sets working directory for subsequent instructions</td><td>WORKDIR /usr/src/app</td></tr>
+        <tr><td>EXPOSE</td><td>Documents which ports the container listens on</td><td>EXPOSE 8080</td></tr>
+        <tr><td>ENV</td><td>Sets an environment variable in the container</td><td>ENV NODE_ENV=production</td></tr>
+        <tr><td>ARG</td><td>Build-time variable (not available at runtime)</td><td>ARG VERSION=1.0</td></tr>
+        <tr><td>VOLUME</td><td>Creates a mount point for persistent storage</td><td>VOLUME ["/data"]</td></tr>
+        <tr><td>USER</td><td>Sets user for RUN, CMD, ENTRYPOINT</td><td>USER appuser</td></tr>
+        <tr><td>HEALTHCHECK</td><td>Tells Docker how to test container health</td><td>HEALTHCHECK CMD curl -f http://localhost/</td></tr>
+        <tr><td>LABEL</td><td>Adds metadata key-value pairs to the image</td><td>LABEL maintainer="you@example.com"</td></tr>
+      </tbody>
+    </table>
+
+    <h3>CMD vs ENTRYPOINT</h3>
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>CMD — Overridable Default</h4>
+        <ul>
+          <li>Sets the default command to run</li>
+          <li>Can be completely overridden at runtime</li>
+          <li><code style="font-size:11px">docker run myimage /bin/bash</code> replaces it</li>
+        </ul>
+        <div style="margin-top:12px;padding:10px;background:rgba(74,55,40,0.06);font-family:'Courier Prime',monospace;font-size:12px;">CMD ["node", "app.js"]</div>
+      </div>
+      <div class="compare-card">
+        <h4>ENTRYPOINT — Fixed Executable</h4>
+        <ul>
+          <li>Sets the executable that always runs</li>
+          <li>CMD becomes its default arguments</li>
+          <li>Only <code style="font-size:11px">--entrypoint</code> flag can override it</li>
+        </ul>
+        <div style="margin-top:12px;padding:10px;background:rgba(74,55,40,0.06);font-family:'Courier Prime',monospace;font-size:12px;">ENTRYPOINT ["nginx", "-g"]<br>CMD ["daemon off;"]</div>
+      </div>
+    </div>
+
+    <div class="sticky rotate-right">
+      <span class="sticky-label">Golden Rule</span>
+      Use ENTRYPOINT when you want the container to always behave like a specific executable. Use CMD when you want a default that users might want to override.
+    </div>
+
+    <h3>Real-World Node.js Dockerfile</h3>
+    <div class="code-block">
+      <span class="code-label">Dockerfile — Node.js Production</span>
+      <span class="comment">#  Stage 1: Build</span><br>
+      <span class="keyword">FROM</span> node:18-alpine <span class="keyword">AS</span> builder<br>
+      <span class="keyword">WORKDIR</span> /usr/src/app<br>
+      <br>
+      <span class="comment"># Install dependencies first (cache-friendly layer)</span><br>
+      <span class="keyword">COPY</span> package*.json ./<br>
+      <span class="keyword">RUN</span> npm ci --only=production<br>
+      <br>
+      <span class="comment">#  Stage 2: Production image</span><br>
+      <span class="keyword">FROM</span> node:18-alpine<br>
+      <span class="keyword">WORKDIR</span> /usr/src/app<br>
+      <br>
+      <span class="comment"># Copy only what we need from builder</span><br>
+      <span class="keyword">COPY</span> --from=builder /usr/src/app/node_modules ./node_modules<br>
+      <span class="keyword">COPY</span> . .<br>
+      <br>
+      <span class="comment"># Create non-root user for security</span><br>
+      <span class="keyword">RUN</span> addgroup -S appgroup && adduser -S appuser -G appgroup<br>
+      <span class="keyword">USER</span> appuser<br>
+      <br>
+      <span class="keyword">EXPOSE</span> 3000<br>
+      <span class="keyword">HEALTHCHECK</span> --interval=30s --timeout=5s \<br>
+      &nbsp;&nbsp;CMD wget -qO- http://localhost:3000/health || exit 1<br>
+      <br>
+      <span class="keyword">CMD</span> [<span class="string">"node"</span>, <span class="string">"server.js"</span>]
+    </div>
+  </div>
+
+  <!-- SECTION 06: BUILDING & RUNNING -->
+  <div class="paper">
+    <span class="section-num">06</span>
+    <span class="section-label">Containers</span>
+    <h2>Building and Running Containers</h2>
+    <div class="section-divider"></div>
+
+    <div class="code-block">
+      <span class="code-label">docker build</span>
+      <span class="comment"># Basic build</span><br>
+      docker build -t myapp:1.0 .<br><br>
+      <span class="comment"># Build with a different Dockerfile name</span><br>
+      docker build -t myapp -f Dockerfile.prod .<br><br>
+      <span class="comment"># Build without cache</span><br>
+      docker build --no-cache -t myapp .<br><br>
+      <span class="comment"># Build and push in one step</span><br>
+      docker build -t myuser/myapp:latest . && docker push myuser/myapp:latest
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">docker run — key patterns</span>
+      <span class="comment"># Interactive with terminal</span><br>
+      docker run -it ubuntu:22.04 bash<br><br>
+      <span class="comment"># Detached, port mapped, named</span><br>
+      docker run -d -p 8080:80 --name my_nginx nginx<br><br>
+      <span class="comment"># Environment variables</span><br>
+      docker run -e DB_HOST=localhost -e DB_PORT=5432 myapp<br><br>
+      <span class="comment"># Volume mount, memory limit, auto-remove</span><br>
+      docker run -v /host/data:/container/data --memory=512m --rm myapp<br><br>
+      <span class="comment"># Custom network</span><br>
+      docker run --network my_network --user 1000:1000 myapp
+    </div>
+
+    <h3>docker run Flags Reference</h3>
+    <table>
+      <thead><tr><th>Flag</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>-d / --detach</td><td>Run container in background, print container ID</td></tr>
+        <tr><td>-it</td><td>Interactive mode with pseudo-TTY — use with bash or sh</td></tr>
+        <tr><td>-p 8080:80</td><td>Map host port 8080 to container port 80 (host:container)</td></tr>
+        <tr><td>-v /h/path:/c/path</td><td>Bind-mount a host directory into the container</td></tr>
+        <tr><td>--name my_container</td><td>Give container a memorable name instead of a random one</td></tr>
+        <tr><td>-e KEY=VALUE</td><td>Set an environment variable inside the container</td></tr>
+        <tr><td>--rm</td><td>Automatically remove container when it exits</td></tr>
+        <tr><td>--network net_name</td><td>Connect container to a specific Docker network</td></tr>
+        <tr><td>--memory=512m</td><td>Limit container to 512 MB of RAM</td></tr>
+        <tr><td>--cpus=1.5</td><td>Limit container to 1.5 CPU cores</td></tr>
+        <tr><td>--restart=always</td><td>Auto-restart on crash or Docker daemon restart</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Container Lifecycle Commands</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>docker ps</td><td>List running containers</td></tr>
+        <tr><td>docker ps -a</td><td>List all containers including stopped ones</td></tr>
+        <tr><td>docker start myapp</td><td>Start a stopped container</td></tr>
+        <tr><td>docker stop myapp</td><td>Gracefully stop (SIGTERM then SIGKILL after 10 seconds)</td></tr>
+        <tr><td>docker kill myapp</td><td>Force-kill a running container immediately</td></tr>
+        <tr><td>docker restart myapp</td><td>Stop then start a container</td></tr>
+        <tr><td>docker rm myapp</td><td>Remove a stopped container</td></tr>
+        <tr><td>docker rm -f myapp</td><td>Force-remove even if running</td></tr>
+        <tr><td>docker rm $(docker ps -aq)</td><td>Remove all stopped containers</td></tr>
+        <tr><td>docker exec -it myapp bash</td><td>Open a shell inside a running container</td></tr>
+        <tr><td>docker logs -f myapp</td><td>Follow logs in real time (like tail -f)</td></tr>
+        <tr><td>docker cp file.txt myapp:/app/</td><td>Copy file from host to container</td></tr>
+        <tr><td>docker inspect myapp</td><td>Show full JSON details about a container</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 07: VOLUMES -->
+  <div class="paper">
+    <span class="section-num">07</span>
+    <span class="section-label">Data Persistence</span>
+    <h2>Docker Volumes</h2>
+    <div class="section-divider"></div>
+
+    <div class="sticky rotate-left">
+      <span class="sticky-label">Critical Concept</span>
+      Container filesystems are ephemeral. Any data written inside a container is lost when the container is removed. Volumes solve this — they live outside the container lifecycle.
+    </div>
+
+    <div class="diagram-wrapper">
+      <svg width="100%" height="180" viewBox="0 0 580 180">
+        <!-- Host -->
+        <rect x="10" y="10" width="260" height="160" rx="2" fill="rgba(212,184,150,0.3)" stroke="#8b6f47" stroke-width="1.2" stroke-dasharray="5,3"/>
+        <text x="140" y="28" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#8b6f47" letter-spacing="2">HOST FILESYSTEM</text>
+        <rect x="30" y="40" width="220" height="50" rx="1" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1.2"/>
+        <text x="140" y="58" text-anchor="middle" font-family="Special Elite,monospace" font-size="8" fill="#c17f3a">Named Volume: my_db_data</text>
+        <text x="140" y="78" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">/var/lib/docker/volumes/</text>
+        <rect x="30" y="100" width="220" height="40" rx="1" fill="#e8d5b7" stroke="#8b6f47" stroke-width="1"/>
+        <text x="140" y="118" text-anchor="middle" font-family="Special Elite,monospace" font-size="8" fill="#8b6f47">Bind Mount</text>
+        <text x="140" y="133" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">/home/user/app → /app</text>
+
+        <!-- Arrows -->
+        <line x1="272" y1="65" x2="308" y2="65" stroke="#c17f3a" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <line x1="308" y1="90" x2="272" y2="90" stroke="#8b6f47" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Container -->
+        <rect x="310" y="10" width="260" height="160" rx="2" fill="rgba(212,184,150,0.15)" stroke="#4a3728" stroke-width="1.5"/>
+        <text x="440" y="28" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#4a3728" letter-spacing="2">CONTAINER</text>
+        <rect x="330" y="40" width="220" height="50" rx="1" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1.2"/>
+        <text x="440" y="58" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#4a3728">/var/lib/postgresql/data</text>
+        <text x="440" y="76" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="10" fill="#8b6f47">persists beyond container</text>
+        <rect x="330" y="100" width="220" height="40" rx="1" fill="rgba(74,55,40,0.1)" stroke="#8b6f47" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="440" y="118" text-anchor="middle" font-family="Courier Prime,monospace" font-size="10" fill="#6b5235">Writable layer</text>
+        <text x="440" y="133" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="10" fill="#c17f3a">LOST on container remove</text>
+      </svg>
+      <p class="diagram-caption">Figure 4 — Volume mount: persistent host storage connected to container filesystem</p>
+    </div>
+
+    <h3>Three Types of Docker Storage</h3>
+    <div class="storage-grid">
+      <div class="storage-card">
+        <div class="storage-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36"><rect x="4" y="8" width="28" height="20" rx="2" fill="none" stroke="#c17f3a" stroke-width="2"/><ellipse cx="18" cy="8" rx="14" ry="4" fill="#e8d5b7" stroke="#c17f3a" stroke-width="1.5"/><ellipse cx="18" cy="28" rx="14" ry="4" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1.5"/></svg>
+        </div>
+        <div class="storage-card-title">Named Volumes</div>
+        <p>Managed entirely by Docker. Stored in /var/lib/docker/volumes/. Best for databases. Easy to backup and restore. Syntax: -v my_vol:/container/path</p>
+      </div>
+      <div class="storage-card">
+        <div class="storage-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36"><rect x="4" y="6" width="28" height="22" rx="2" fill="none" stroke="#8b6f47" stroke-width="2"/><line x1="4" y1="14" x2="32" y2="14" stroke="#8b6f47" stroke-width="1.5"/><line x1="12" y1="6" x2="12" y2="14" stroke="#8b6f47" stroke-width="1.5"/><rect x="6" y="18" width="8" height="6" rx="1" fill="#d4b896"/><rect x="18" y="18" width="12" height="6" rx="1" fill="#d4b896"/></svg>
+        </div>
+        <div class="storage-card-title">Bind Mounts</div>
+        <p>Mounts a specific host directory. Full access to host filesystem. Perfect for live code reloading in dev. Depends on host structure. Syntax: -v /host/path:/container/path</p>
+      </div>
+      <div class="storage-card">
+        <div class="storage-card-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36"><rect x="6" y="10" width="24" height="16" rx="2" fill="none" stroke="#4a3728" stroke-width="2" stroke-dasharray="4,2"/><text x="18" y="22" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#4a3728">RAM</text></svg>
+        </div>
+        <div class="storage-card-title">tmpfs Mounts</div>
+        <p>Stored in host memory only (RAM). Never written to disk. Useful for sensitive temporary data. Data is gone when the container stops. Syntax: --tmpfs /tmp</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">Volume Commands</span>
+      <span class="comment"># Create and use a named volume with Postgres</span><br>
+      docker volume create my_database<br>
+      docker run -d --name postgres_db \<br>
+      &nbsp;&nbsp;-e POSTGRES_PASSWORD=secret \<br>
+      &nbsp;&nbsp;-v my_database:/var/lib/postgresql/data \<br>
+      &nbsp;&nbsp;postgres:15<br><br>
+      <span class="comment"># Inspect, remove, backup</span><br>
+      docker volume ls<br>
+      docker volume inspect my_database<br>
+      docker volume rm my_database<br>
+      docker volume prune<br><br>
+      <span class="comment"># Backup a volume to a tar file</span><br>
+      docker run --rm -v my_database:/data -v $(pwd):/backup \<br>
+      &nbsp;&nbsp;ubuntu tar czf /backup/db_backup.tar.gz /data
+    </div>
+  </div>
+
+  <!-- SECTION 08: NETWORKING -->
+  <div class="paper">
+    <span class="section-num">08</span>
+    <span class="section-label">Networking</span>
+    <h2>Docker Networking</h2>
+    <div class="section-divider"></div>
+
+    <p>Docker creates virtual networks that allow containers to communicate securely. Each container gets its own network namespace — its own virtual IP, ports, and routing table. You control exactly what can reach what.</p>
+
+    <div class="diagram-wrapper">
+      <svg width="100%" height="160" viewBox="0 0 600 160">
+        <rect x="0" y="0" width="600" height="160" rx="2" fill="rgba(212,184,150,0.15)"/>
+        <text x="300" y="18" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#8b6f47" letter-spacing="3">HOST MACHINE — LINUX KERNEL</text>
+
+        <rect x="20" y="30" width="120" height="100" rx="2" fill="#f0e4c4" stroke="#c17f3a" stroke-width="1.5"/>
+        <text x="80" y="50" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#c17f3a">bridge</text>
+        <text x="80" y="66" text-anchor="middle" font-family="Courier Prime,monospace" font-size="9" fill="#4a3728">docker0</text>
+        <text x="80" y="82" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#8b6f47">default</text>
+        <text x="80" y="98" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#8b6f47">isolated NAT</text>
+
+        <rect x="160" y="30" width="120" height="100" rx="2" fill="#e8d5b7" stroke="#8b6f47" stroke-width="1.5"/>
+        <text x="220" y="50" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#8b6f47">host</text>
+        <text x="220" y="68" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#4a3728">no NAT</text>
+        <text x="220" y="86" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#4a3728">shares host</text>
+        <text x="220" y="102" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#4a3728">network stack</text>
+
+        <rect x="300" y="30" width="120" height="100" rx="2" fill="#f5efe0" stroke="#4a3728" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="360" y="50" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#4a3728">none</text>
+        <text x="360" y="68" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#6b5235">no network</text>
+        <text x="360" y="86" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#6b5235">completely</text>
+        <text x="360" y="102" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#6b5235">isolated</text>
+
+        <rect x="440" y="30" width="140" height="100" rx="2" fill="rgba(193,127,58,0.12)" stroke="#c17f3a" stroke-width="1.5" stroke-dasharray="5,2"/>
+        <text x="510" y="50" text-anchor="middle" font-family="Special Elite,monospace" font-size="9" fill="#c17f3a">overlay</text>
+        <text x="510" y="68" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#4a3728">multi-host</text>
+        <text x="510" y="84" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#4a3728">Swarm mode</text>
+        <text x="510" y="100" text-anchor="middle" font-family="Lora,serif" font-style="italic" font-size="9" fill="#4a3728">VxLAN tunnel</text>
+      </svg>
+      <p class="diagram-caption">Figure 5 — The four Docker network driver modes</p>
+    </div>
+
+    <div class="network-grid">
+      <div class="net-card">
+        <div class="net-card-title">bridge (Default)</div>
+        <p>Docker creates a private network via the docker0 bridge. Containers get their own IP. Use -p to map ports to the host. Containers on the same bridge can talk to each other.</p>
+      </div>
+      <div class="net-card">
+        <div class="net-card-title">host</div>
+        <p>Container shares the host's network stack directly — no network isolation. Highest performance (no NAT overhead). Container uses host's IP and ports directly. Use only when performance is critical.</p>
+      </div>
+      <div class="net-card">
+        <div class="net-card-title">none</div>
+        <p>Container has no network access whatsoever. Complete network isolation. Good for batch processing jobs, security-sensitive workloads, or testing.</p>
+      </div>
+      <div class="net-card">
+        <div class="net-card-title">overlay (Swarm)</div>
+        <p>Connects containers across multiple Docker hosts using VxLAN tunneling. Required for Docker Swarm services. Provides encrypted cross-host communication.</p>
+      </div>
+    </div>
+
+    <div class="sticky rotate-right">
+      <span class="sticky-label">Pro Tip — Container DNS</span>
+      On custom networks (not the default bridge), Docker runs an embedded DNS server. Containers can reach each other by name instead of IP address. Your app can use http://database:5432 instead of hardcoding IPs.
+    </div>
+
+    <h3>Network Commands</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>docker network ls</td><td>List all Docker networks</td></tr>
+        <tr><td>docker network create app-net</td><td>Create a custom bridge network</td></tr>
+        <tr><td>docker network inspect app-net</td><td>Show details of a network</td></tr>
+        <tr><td>docker run --network app-net myapp</td><td>Start container on a specific network</td></tr>
+        <tr><td>docker network connect app-net myapp</td><td>Connect existing container to a network</td></tr>
+        <tr><td>docker network disconnect app-net myapp</td><td>Disconnect container from network</td></tr>
+        <tr><td>docker network prune</td><td>Remove all unused networks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 09: COMPOSE -->
+  <div class="paper">
+    <span class="section-num">09</span>
+    <span class="section-label">Multi-container Apps</span>
+    <h2>Docker Compose</h2>
+    <div class="section-divider"></div>
+
+    <p>Real-world apps are not single containers. A typical web app needs a web server, a database, a cache, and a message queue. Docker Compose lets you define all of these in one docker-compose.yml file and start them all with one command.</p>
+
+    <div class="code-block">
+      <span class="code-label">docker-compose.yml — Full-stack Web App</span>
+      <span class="keyword">version:</span> <span class="string">"3.9"</span><br>
+      <span class="keyword">services:</span><br>
+      &nbsp;&nbsp;<span class="keyword">web:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">build:</span> .<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">ports:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="string">"8000:8000"</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">environment:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- DATABASE_URL=postgresql://user:pass@db:5432/mydb<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- REDIS_URL=redis://cache:6379<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">volumes:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ./src:/app/src <span class="comment"># live reload in dev</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">depends_on:</span> [db, cache]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">networks:</span> [app_network]<br>
+      <br>
+      &nbsp;&nbsp;<span class="keyword">db:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">image:</span> postgres:15<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">environment:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSTGRES_USER: user<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSTGRES_PASSWORD: pass<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POSTGRES_DB: mydb<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">volumes:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- db_data:/var/lib/postgresql/data<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">networks:</span> [app_network]<br>
+      <br>
+      &nbsp;&nbsp;<span class="keyword">cache:</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">image:</span> redis:7-alpine<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">networks:</span> [app_network]<br>
+      <br>
+      <span class="keyword">volumes:</span><br>
+      &nbsp;&nbsp;db_data:<br>
+      <span class="keyword">networks:</span><br>
+      &nbsp;&nbsp;app_network:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">driver:</span> bridge
+    </div>
+
+    <h3>Essential Compose Commands</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>docker compose up</td><td>Start all services in foreground</td></tr>
+        <tr><td>docker compose up -d</td><td>Start all services in detached mode</td></tr>
+        <tr><td>docker compose up --build</td><td>Rebuild images then start</td></tr>
+        <tr><td>docker compose down</td><td>Stop and remove containers and default network</td></tr>
+        <tr><td>docker compose down -v</td><td>Also remove named volumes (data is deleted)</td></tr>
+        <tr><td>docker compose ps</td><td>List all running services</td></tr>
+        <tr><td>docker compose logs -f web</td><td>Follow logs from a specific service</td></tr>
+        <tr><td>docker compose exec web bash</td><td>Open shell in a running service</td></tr>
+        <tr><td>docker compose restart web</td><td>Restart a specific service</td></tr>
+        <tr><td>docker compose pull</td><td>Pull latest images for all services</td></tr>
+        <tr><td>docker compose scale web=3</td><td>Run 3 instances of the web service</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 10: SWARM -->
+  <div class="paper">
+    <span class="section-num">10</span>
+    <span class="section-label">Orchestration</span>
+    <h2>Docker Swarm</h2>
+    <div class="section-divider"></div>
+
+    <p>Docker Swarm is Docker's native clustering and orchestration tool. It turns a group of Docker hosts into a single virtual Docker host. Swarm handles load balancing, rolling updates, health checks, and automatic rescheduling of failed services.</p>
+
+    <div class="diagram-wrapper">
+      <div class="swarm-diagram">
+        <div class="swarm-manager">
+          <span class="swarm-label">Manager Node</span>
+          <div class="swarm-name">Manager</div>
+          <div style="font-size:11px;color:#8b6f47;margin-top:6px;">Assigns tasks<br>Load balances<br>Manages state</div>
+        </div>
+        <div class="swarm-arrow">→</div>
+        <div class="swarm-workers">
+          <div class="swarm-worker"><span class="swarm-label">Worker Node 1</span>Container A &nbsp; Container B</div>
+          <div class="swarm-worker"><span class="swarm-label">Worker Node 2</span>Container C &nbsp; Container D</div>
+          <div class="swarm-worker"><span class="swarm-label">Worker Node 3</span>Container E &nbsp; (standby)</div>
+        </div>
+      </div>
+      <p class="diagram-caption">Figure 6 — Swarm cluster: one manager, multiple worker nodes</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Key Concepts</h4>
+        <ul>
+          <li>Manager Nodes control the swarm and assign tasks to workers</li>
+          <li>Worker Nodes execute the container tasks</li>
+          <li>Services define the desired state of a set of containers</li>
+          <li>Tasks are single containers running on a node</li>
+          <li>Built-in load balancing across all replicas</li>
+          <li>Automatic failover — if a node dies, tasks reschedule</li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h4>When to Use Swarm</h4>
+        <ul>
+          <li>Works best when you are already on Docker</li>
+          <li>Simpler to set up than Kubernetes</li>
+          <li>Supports rolling updates with zero downtime</li>
+          <li>Uses overlay networks for cross-host communication</li>
+          <li>Manages secrets and configs securely</li>
+          <li>Less powerful than Kubernetes for very large clusters</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">Swarm Setup and Service Management</span>
+      <span class="comment"># Initialize the swarm on the manager node</span><br>
+      docker swarm init --advertise-addr 192.168.1.100<br><br>
+      <span class="comment"># Join as worker (use token from init output)</span><br>
+      docker swarm join --token SWMTKN-1-... 192.168.1.100:2377<br><br>
+      <span class="comment"># Create a service with 3 replicas</span><br>
+      docker service create --name my_web --replicas 3 --publish 80:80 nginx:latest<br><br>
+      <span class="comment"># Scale up</span><br>
+      docker service scale my_web=5<br><br>
+      <span class="comment"># Rolling update with zero downtime</span><br>
+      docker service update --image nginx:1.25 my_web<br><br>
+      <span class="comment"># View nodes and services</span><br>
+      docker node ls<br>
+      docker service ls
+    </div>
+  </div>
+
+  <!-- SECTION 11: DEBUGGING -->
+  <div class="paper">
+    <span class="section-num">11</span>
+    <span class="section-label">Debugging</span>
+    <h2>Debugging and Monitoring Containers</h2>
+    <div class="section-divider"></div>
+
+    <div class="code-block">
+      <span class="code-label">Debugging Toolkit</span>
+      <span class="comment"># View container output (last 50 lines, past hour)</span><br>
+      docker logs --tail=50 --since=1h myapp<br><br>
+      <span class="comment"># Get a shell inside a running container</span><br>
+      docker exec -it myapp bash<br>
+      docker exec -it myapp sh <span class="comment"># for alpine-based images</span><br><br>
+      <span class="comment"># Real-time CPU, memory, network, disk I/O stats</span><br>
+      docker stats<br>
+      docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"<br><br>
+      <span class="comment"># Full JSON config, network, volumes, state</span><br>
+      docker inspect myapp<br>
+      docker inspect -f "{{.State.Status}}" myapp<br><br>
+      <span class="comment"># List processes running inside the container</span><br>
+      docker top myapp<br><br>
+      <span class="comment"># Stream real-time events from the Docker daemon</span><br>
+      docker events --filter type=container
+    </div>
+
+    <div class="sticky rotate-left">
+      <span class="sticky-label">Debug Build Failures</span>
+      When a build fails: find the last successful layer ID in the build output, then run <code style="font-size:12px;font-family:'Courier Prime',monospace">docker run -it &lt;layer_id&gt; /bin/sh</code> — this drops you inside the last-good state of the image so you can debug interactively.
+    </div>
+  </div>
+
+  <!-- SECTION 12: SECURITY -->
+  <div class="paper">
+    <span class="section-num">12</span>
+    <span class="section-label">Security</span>
+    <h2>Security Best Practices</h2>
+    <div class="section-divider"></div>
+
+    <div class="security-grid">
+      <div class="sec-card">
+        <div class="sec-card-title">Never Run as Root</div>
+        <p>Always add a non-root user in your Dockerfile. Use the USER instruction to switch. Root in a container can be root on the host if misconfigured.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-title">Never Put Secrets in Images</div>
+        <p>ENV, ARG, and COPY all leave traces in layers. Use Docker Secrets, env files, or a secrets manager (Vault, AWS Secrets Manager) at runtime.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-title">Use Minimal Base Images</div>
+        <p>Start from alpine, distroless, or scratch. Fewer packages means a smaller attack surface. A 5 MB Alpine image has far fewer vulnerabilities than a 900 MB Ubuntu image.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-title">Use Multi-stage Builds</div>
+        <p>Build tools should not be in production images. Multi-stage builds let you compile in one stage and copy only the binary to the final image.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-title">Scan for Vulnerabilities</div>
+        <p>Use docker scout, Trivy, Snyk, or AWS ECR scanning to detect known CVEs before deployment.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-title">Limit Capabilities</div>
+        <p>Use --cap-drop ALL and --cap-add only what you need. Prevents privilege escalation attacks.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">Secure Dockerfile — Python</span>
+      <span class="keyword">FROM</span> python:3.11-slim <span class="keyword">AS</span> builder<br>
+      <span class="keyword">WORKDIR</span> /app<br>
+      <span class="keyword">COPY</span> requirements.txt .<br>
+      <span class="keyword">RUN</span> pip install --no-cache-dir -r requirements.txt<br><br>
+      <span class="keyword">FROM</span> python:3.11-slim<br>
+      <span class="keyword">WORKDIR</span> /app<br>
+      <span class="comment"># Copy only app and dependencies, not build tools</span><br>
+      <span class="keyword">COPY</span> --from=builder /usr/local/lib/python3.11 /usr/local/lib/python3.11<br>
+      <span class="keyword">COPY</span> . .<br><br>
+      <span class="comment"># Create and use non-root user</span><br>
+      <span class="keyword">RUN</span> adduser --disabled-password --gecos <span class="string">""</span> appuser \<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&& chown -R appuser:appuser /app<br>
+      <span class="keyword">USER</span> appuser<br><br>
+      <span class="comment"># Drop all capabilities except what is needed (set at runtime)</span><br>
+      <span class="comment"># --cap-drop ALL --cap-add NET_BIND_SERVICE</span><br>
+      <span class="comment"># Read-only filesystem: --read-only --tmpfs /tmp</span><br><br>
+      <span class="keyword">EXPOSE</span> 8080<br>
+      <span class="keyword">CMD</span> [<span class="string">"python"</span>, <span class="string">"app.py"</span>]
+    </div>
+  </div>
+
+  <!-- SECTION 13: CHEAT SHEET -->
+  <div class="paper">
+    <span class="section-num">13</span>
+    <span class="section-label">Reference</span>
+    <h2>Quick Command Cheat Sheet</h2>
+    <div class="section-divider"></div>
+
+    <div class="cheat-section">
+      <h3>Containers</h3>
+      <table>
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>docker run -it ubuntu bash</td><td>Interactive container with terminal</td></tr>
+          <tr><td>docker run -d -p 80:80 nginx</td><td>Detached, map port 80</td></tr>
+          <tr><td>docker run --rm -v $(pwd):/app node npm test</td><td>Run tests, auto-cleanup after</td></tr>
+          <tr><td>docker ps / docker ps -a</td><td>Running / all containers</td></tr>
+          <tr><td>docker stop / docker rm container_id</td><td>Gracefully stop / remove stopped</td></tr>
+          <tr><td>docker rm $(docker ps -aq)</td><td>Remove all stopped containers</td></tr>
+          <tr><td>docker exec -it container_id bash</td><td>Shell inside container</td></tr>
+          <tr><td>docker logs -f container_id</td><td>Follow real-time logs</td></tr>
+          <tr><td>docker stats</td><td>Live CPU and memory usage</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cheat-section">
+      <h3>Images</h3>
+      <table>
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>docker build -t myapp:1.0 .</td><td>Build image from current directory</td></tr>
+          <tr><td>docker images</td><td>List local images</td></tr>
+          <tr><td>docker pull redis:7</td><td>Download image from Docker Hub</td></tr>
+          <tr><td>docker push myuser/myapp:1.0</td><td>Push to registry</td></tr>
+          <tr><td>docker rmi myapp:1.0</td><td>Remove image</td></tr>
+          <tr><td>docker image prune -a</td><td>Remove all unused images</td></tr>
+          <tr><td>docker tag myapp:1.0 myapp:latest</td><td>Add alias tag</td></tr>
+          <tr><td>docker save -o app.tar myapp</td><td>Export to .tar</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cheat-section">
+      <h3>Volumes and Networks</h3>
+      <table>
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>docker volume create my_vol</td><td>Create named volume</td></tr>
+          <tr><td>docker volume ls / inspect / prune</td><td>List, inspect, remove unused volumes</td></tr>
+          <tr><td>docker network create app-net</td><td>Create custom network</td></tr>
+          <tr><td>docker network ls / prune</td><td>List / remove unused networks</td></tr>
+          <tr><td>docker network connect app-net myapp</td><td>Connect container to network</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cheat-section">
+      <h3>Compose and System</h3>
+      <table>
+        <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>docker compose up -d</td><td>Start all services in background</td></tr>
+          <tr><td>docker compose down</td><td>Stop and remove services</td></tr>
+          <tr><td>docker compose down -v</td><td>Also remove volumes (data gone)</td></tr>
+          <tr><td>docker compose logs -f</td><td>Follow logs from all services</td></tr>
+          <tr><td>docker compose exec web bash</td><td>Shell in a compose service</td></tr>
+          <tr><td>docker system df</td><td>Show Docker disk usage</td></tr>
+          <tr><td>docker system prune</td><td>Remove all unused containers, networks, images</td></tr>
+          <tr><td>docker system prune -a --volumes</td><td>Nuclear cleanup — remove everything unused</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pull-quote">
+      <p>"Ship the environment, not just the code."</p>
+    </div>
+
+    <div class="sticky">
+      <span class="sticky-label">Key Takeaways — Remember These Forever</span>
+      Containers are isolated processes sharing the host OS kernel — fast and lightweight. Images are read-only layered blueprints — immutable, shareable, versioned. A Dockerfile is the recipe for building an image — FROM, then RUN, then CMD. Volumes are the only way to persist data beyond container lifetime. Networks are isolated virtual environments — use custom networks for container DNS. Compose manages multi-container apps with one YAML file. On security: never run as root, never embed secrets, always use minimal images.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
